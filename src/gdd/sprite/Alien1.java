@@ -28,8 +28,11 @@ public class Alien1 extends Enemy {
         setImage(scaledImage);
     }
 
+    @Override
     public void act(int direction) {
-        this.y ++;
+        this.y++;
+        // Call the parent's animation method
+        super.act();
     }
 
     public Bomb getBomb() {
@@ -44,6 +47,11 @@ public class Alien1 extends Enemy {
         public Bomb(int x, int y) {
 
             initBomb(x, y);
+        }
+        
+        @Override
+        public void act() {
+            // Bomb doesn't need animation
         }
 
         private void initBomb(int x, int y) {
