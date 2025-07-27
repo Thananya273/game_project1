@@ -48,4 +48,12 @@ public class Game extends JFrame  {
         revalidate();
         repaint();
     }
+
+    public void loadBossScene() {
+        getContentPane().removeAll();
+        add(new gdd.scene.BossScene(this, scene1.getPlayer()));
+        scene1.stop();
+        revalidate();
+        repaint();
+    }
 }
