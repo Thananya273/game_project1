@@ -69,9 +69,7 @@ public class TitleScene extends JPanel {
 
     private void initAudio() {
         try {
-            String filePath = "src/audio/title.wav";
-            audioPlayer = new AudioPlayer(filePath);
-
+            audioPlayer = new AudioPlayer(AUDIO_TITLE);
             audioPlayer.play();
         } catch (Exception e) {
             System.err.println("Error with playing sound.");
@@ -91,10 +89,10 @@ public class TitleScene extends JPanel {
         g.setColor(Color.black);
         g.fillRect(0, 0, d.width, d.height);
 
-        g.drawImage(image, 0, -80, d.width, d.height, this);
+        g.drawImage(image, 0, 0, d.width, d.height, this);
 
         if (frame % 60 < 30) {
-            g.setColor(Color.red);
+            g.setColor(Color.yellow);
         } else {
             g.setColor(Color.white);
         }
@@ -109,7 +107,6 @@ public class TitleScene extends JPanel {
 
         g.setColor(Color.gray);
         g.setFont(g.getFont().deriveFont(10f));
-        g.drawString("Game by Chayapol", 10, 650);
 
         Toolkit.getDefaultToolkit().sync();
     }
