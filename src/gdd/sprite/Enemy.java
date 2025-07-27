@@ -6,7 +6,7 @@ import javax.swing.ImageIcon;
 
 public class Enemy extends Sprite {
 
-    // private Bomb bomb;
+    private Bomb bomb;
     
     // Animation variables
     protected Image frame1Sprite;
@@ -23,6 +23,7 @@ public class Enemy extends Sprite {
     public Enemy(int x, int y) {
 
         initEnemy(x, y);
+        bomb = new Bomb(x, y);
     }
 
     private void initEnemy(int x, int y) {
@@ -87,42 +88,43 @@ public class Enemy extends Sprite {
         // Create a shot at the enemy's position
         return new EnemyShot(this.x + (getImage().getWidth(null) / 2), this.y + getImage().getHeight(null));
     }
-/* 
-    public Bomb getBomb() {
 
+    public Bomb getBomb() {
         return bomb;
+    }
+    public void dropBomb() {
+        if (bomb.isDestroyed()) {
+            bomb.setDestroyed(false);
+            bomb.setX(this.x + getImage().getWidth(null) / 2 - 8);
+            bomb.setY(this.y + getImage().getHeight(null));
+        }
+    }
+    public void updateBomb() {
+        if (!bomb.isDestroyed()) {
+            bomb.setY(bomb.getY() + 4);
+            if (bomb.getY() > BOARD_HEIGHT) {
+                bomb.setDestroyed(true);
+            }
+        }
     }
 
     public class Bomb extends Sprite {
-
         private boolean destroyed;
-
         public Bomb(int x, int y) {
-
-            initBomb(x, y);
-        }
-
-        private void initBomb(int x, int y) {
-
             setDestroyed(true);
-
             this.x = x;
             this.y = y;
-
             var bombImg = "src/images/bomb.png";
             var ii = new ImageIcon(bombImg);
             setImage(ii.getImage());
         }
-
+        @Override
+        public void act() {}
         public void setDestroyed(boolean destroyed) {
-
             this.destroyed = destroyed;
         }
-
         public boolean isDestroyed() {
-
             return destroyed;
         }
     }
-*/
 }

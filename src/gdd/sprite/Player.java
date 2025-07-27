@@ -12,6 +12,19 @@ public class Player extends Sprite {
     private static final int START_Y = 540;
     private int width;
     private int currentSpeed = 2;
+    private int lives = 3;
+    private int score = 0;
+    private int shotLevel = 1; // For future shot upgrades
+    private boolean invulnerable = false;
+    private int invulnerabilityTimer = 0;
+    private boolean blinkVisible = true;
+    private int blinkCounter = 0;
+    private static final int BLINK_RATE = 8; // Blink every 8 frames (about 7.5 times per second at 60fps)
+
+    private boolean isMultiShot = false;
+    private int multiShotTimer = 0;
+    private int multiShotLevel = 1;
+    private static final int MAX_MULTI_SHOT_LEVEL = 4;
 
     private Rectangle bounds = new Rectangle(175,135,17,32);
     
@@ -74,6 +87,9 @@ public class Player extends Sprite {
         // Set initial image to stationary
         setImage(stationarySprite);
 
+        // Initialize width properly
+        width = PLAYER_WIDTH;
+
         setX(START_X);
         setY(START_Y);
     }
@@ -89,6 +105,102 @@ public class Player extends Sprite {
         this.currentSpeed = speed;
         return currentSpeed;
     }
+    
+    public int getLives() {
+        return lives;
+    }
+    
+    public void setLives(int lives) {
+        this.lives = lives;
+    }
+    
+    public int getScore() {
+        return score;
+    }
+    
+    public void addScore(int points) {
+        this.score += points;
+    }
+    
+    public int getShotLevel() {
+        return shotLevel;
+    }
+    
+    public void setShotLevel(int level) {
+        this.shotLevel = level;
+    }
+    
+    public boolean isInvulnerable() {
+        return invulnerable;
+    }
+    
+    public boolean shouldDraw() {
+        return !invulnerable || blinkVisible;
+    }
+    
+    public void setInvulnerable(boolean invulnerable) {
+        this.invulnerable = invulnerable;
+    }
+    
+    public void startInvulnerability(int frames) {
+        this.invulnerable = true;
+        this.invulnerabilityTimer = frames;
+        this.blinkVisible = true;
+        this.blinkCounter = 0;
+    }
+    
+    public void updateInvulnerability() {
+        if (invulnerable && invulnerabilityTimer > 0) {
+            invulnerabilityTimer--;
+            
+            // Update blinking effect
+            blinkCounter++;
+            if (blinkCounter >= BLINK_RATE) {
+                blinkVisible = !blinkVisible;
+                blinkCounter = 0;
+            }
+            
+            if (invulnerabilityTimer <= 0) {
+                invulnerable = false;
+                blinkVisible = true; // Ensure player is visible when invulnerability ends
+            }
+        }
+        if (isMultiShot) {
+            multiShotTimer--;
+            if (multiShotTimer <= 0) {
+                isMultiShot = false;
+            }
+        }
+    }
+
+    public void activateMultiShot(int duration) {
+        if (multiShotLevel < MAX_MULTI_SHOT_LEVEL) {
+            multiShotLevel++;
+        }
+        isMultiShot = true;
+        multiShotTimer = duration;
+    }
+    public int getMultiShotLevel() {
+        return multiShotLevel;
+    }
+    public void setMultiShotLevel(int level) {
+        multiShotLevel = Math.max(1, Math.min(level, MAX_MULTI_SHOT_LEVEL));
+    }
+    public void incrementMultiShotLevel() {
+        setMultiShotLevel(multiShotLevel + 1);
+    }
+    public boolean isMultiShot() {
+        return multiShotLevel > 1 && multiShotTimer > 0;
+    }
+    public void updatePowerups() {
+        if (isMultiShot) {
+            multiShotTimer--;
+            if (multiShotTimer <= 0) {
+                isMultiShot = false;
+                multiShotLevel = 1;
+            }
+        }
+    }
 
     public void act() {
         x += dx;
@@ -97,8 +209,8 @@ public class Player extends Sprite {
             x = 2;
         }
 
-        if (x >= BOARD_WIDTH - 2 * width) {
-            x = BOARD_WIDTH - 2 * width;
+        if (x >= BOARD_WIDTH - width) {
+            x = BOARD_WIDTH - width;
         }
         
         // Update animation

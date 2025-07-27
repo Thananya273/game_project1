@@ -5,7 +5,7 @@ import javax.swing.ImageIcon;
 
 public class Shot extends Sprite {
 
-    private static final int H_SPACE = 20;
+    private static final int H_SPACE = 18;
     private static final int V_SPACE = 1;
 
     public Shot() {
@@ -26,7 +26,12 @@ public class Shot extends Sprite {
                 java.awt.Image.SCALE_SMOOTH);
         setImage(scaledImage);
 
-        setX(x + H_SPACE);
-        setY(y - V_SPACE);
+        setX(x);
+        setY(y);
+    }
+    
+    @Override
+    public void act() {
+        // Shot doesn't need animation
     }
 }

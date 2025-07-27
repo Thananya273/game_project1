@@ -2,14 +2,22 @@ package gdd.sprite;
 
 import static gdd.Global.*;
 import javax.swing.ImageIcon;
+import java.util.Random;
 
 public class Alien1 extends Enemy {
 
     private Bomb bomb;
+    // Zigzag movement fields
+    private int startX = 0;
+    private double phaseOffset = 0;
+    private static final int ZIGZAG_AMPLITUDE = 40;
+    private static final double ZIGZAG_FREQUENCY = 18.0;
+    private static final Random rand = new Random();
 
     public Alien1(int x, int y) {
         super(x, y);
-        // initEnemy(x, y);
+        this.startX = x;
+        this.phaseOffset = rand.nextInt(360); // random phase offset in degrees
     }
 
     private void initEnemy(int x, int y) {
@@ -30,7 +38,10 @@ public class Alien1 extends Enemy {
 
     @Override
     public void act(int direction) {
+        // Smooth sine wave zigzag
         this.y++;
+        double radians = ((this.y + phaseOffset) / ZIGZAG_FREQUENCY);
+        this.x = (int)(startX + ZIGZAG_AMPLITUDE * Math.sin(radians));
         // Call the parent's animation method
         super.act();
     }
