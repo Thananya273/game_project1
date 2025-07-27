@@ -37,8 +37,8 @@ public class AudioPlayer {
 
         // open audioInputStream to the clip
         clip.open(audioInputStream);
-
-        clip.loop(Clip.LOOP_CONTINUOUSLY);
+        // Removed looping for sound effects
+        // clip.loop(Clip.LOOP_CONTINUOUSLY);
     }
 
     public static void main(String[] args) {
@@ -170,7 +170,8 @@ public class AudioPlayer {
         audioInputStream = AudioSystem.getAudioInputStream(
                 new File(filePath).getAbsoluteFile());
         clip.open(audioInputStream);
-        clip.loop(Clip.LOOP_CONTINUOUSLY);
+        // Removed looping for sound effects
+        // clip.loop(Clip.LOOP_CONTINUOUSLY);
     }
 
 }
