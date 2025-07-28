@@ -37,7 +37,8 @@ public class Global {
     public static final String AUDIO_EXPLOSION = "src/audio/explosion.wav";
     public static final String AUDIO_GAME_OVER = "src/audio/gameover.wav";
     public static final String AUDIO_GUN = "src/audio/gun.wav";
-    public static final String AUDIO_POWERUP = "src/audio/gameover.wav"; // Placeholder - replace with actual powerup sound
+    public static final String AUDIO_POWERUP = "src/audio/booster.wav"; // Placeholder - replace with actual powerup sound
+    public static final String AUDIO_GAMEWIN = "src/audio/gamewin.wav";
 
     // Images
     public static final String IMG_ENEMY = "src/images/enemy1/enemy1_1.png";
