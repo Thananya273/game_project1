@@ -8,6 +8,7 @@ import java.util.Scanner;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
@@ -37,8 +38,12 @@ public class AudioPlayer {
 
         // open audioInputStream to the clip
         clip.open(audioInputStream);
-        // Removed looping for sound effects
-        // clip.loop(Clip.LOOP_CONTINUOUSLY);
+    }
+    
+    // Method to play audio with looping
+    public void playLoop() {
+        clip.loop(Clip.LOOP_CONTINUOUSLY);
+        status = "play";
     }
 
     public static void main(String[] args) {
@@ -103,6 +108,16 @@ public class AudioPlayer {
         clip.start();
 
         status = "play";
+    }
+    
+    // Method to set volume (0.0f to 1.0f, where 1.0f is maximum volume)
+    public void setVolume(float volume) {
+        if (clip != null && clip.isControlSupported(FloatControl.Type.MASTER_GAIN)) {
+            FloatControl gainControl = (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
+            // Convert volume (0.0f to 1.0f) to decibels (-80.0f to 6.0f)
+            float db = (float) (Math.log(volume) / Math.log(10.0) * 20.0);
+            gainControl.setValue(db);
+        }
     }
 
 

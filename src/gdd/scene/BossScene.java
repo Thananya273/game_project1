@@ -4,6 +4,7 @@ import gdd.Game;
 import static gdd.Global.*;
 import gdd.sprite.Player;
 import gdd.sprite.Shot;
+import gdd.sprite.Explosion;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -30,6 +31,7 @@ public class BossScene extends JPanel {
     private Player player;
     private List<Shot> playerShots = new ArrayList<>();
     private List<BossBullet> bossBullets = new ArrayList<>();
+    private List<Explosion> explosions = new ArrayList<>();
     private Timer timer;
     private boolean inGame = true;
     private String message = "";
@@ -48,10 +50,17 @@ public class BossScene extends JPanel {
     private int frame = 0;
     
     // Explosion animation fields
-    private Image explosionImage;
+    private Image explosionFrame1;
+    private Image explosionFrame2;
     private boolean playerExploding = false;
     private int playerExplosionFrame = 0;
     private int playerExplosionTimer = 0;
+    private boolean playerFinalDeath = false;
+    
+    // Boss explosion animation fields
+    private boolean bossExploding = false;
+    private int bossExplosionFrame = 0;
+    private int bossExplosionTimer = 0;
 
     public BossScene(Game game, Player player) {
         this.game = game;
@@ -78,8 +87,10 @@ public class BossScene extends JPanel {
         bossBulletImage = ii.getImage();
     }
     private void loadExplosionFrames() {
-        var ii = new ImageIcon(IMG_EXPLOSION);
-        explosionImage = ii.getImage();
+        var iiFrame1 = new ImageIcon(IMG_EXPLOSION_FRAME1);
+        var iiFrame2 = new ImageIcon(IMG_EXPLOSION_FRAME2);
+        explosionFrame1 = iiFrame1.getImage();
+        explosionFrame2 = iiFrame2.getImage();
     }
     private void initEntities() {
         // Use the player passed from Scene1 (keeps speed and bullet upgrades)
@@ -106,7 +117,11 @@ public class BossScene extends JPanel {
         drawStarfield(g);
 
         // Draw boss
-        if (bossHealth > 0 && transitionDone) {
+        if (bossExploding && inGame) {
+            // Draw boss explosion animation only while game is still running
+            Image currentBossExplosionFrame = (bossExplosionFrame % 2 == 0) ? explosionFrame1 : explosionFrame2;
+            g.drawImage(currentBossExplosionFrame, bossX, bossY, BOSS_WIDTH, BOSS_HEIGHT, this);
+        } else if (bossHealth > 0 && transitionDone && !bossExploding) {
             g.drawImage(bossImage, bossX, bossY, BOSS_WIDTH, BOSS_HEIGHT, this);
             // Boss health bar
             g.setColor(Color.red);
@@ -118,7 +133,8 @@ public class BossScene extends JPanel {
         // Draw player
         if (playerExploding) {
             // Draw explosion animation
-            g.drawImage(explosionImage, player.getX(), player.getY(), this);
+            Image currentExplosionFrame = (playerExplosionFrame % 2 == 0) ? explosionFrame1 : explosionFrame2;
+            g.drawImage(currentExplosionFrame, player.getX(), player.getY(), this);
         } else if (player.isVisible() && player.shouldDraw()) {
             g.drawImage(player.getImage(), player.getX(), player.getY(), this);
         }
@@ -134,6 +150,13 @@ public class BossScene extends JPanel {
         for (BossBullet b : bossBullets) {
             if (b.visible)
                 g.drawImage(bossBulletImage, b.x, b.y, 24, 32, this);
+        }
+        
+        // Draw explosions
+        for (Explosion explosion : explosions) {
+            if (explosion.isVisible()) {
+                g.drawImage(explosion.getImage(), explosion.getX(), explosion.getY(), this);
+            }
         }
 
         // Draw HUD
@@ -179,15 +202,40 @@ public class BossScene extends JPanel {
                 playerExplosionFrame++;
                 playerExplosionTimer = 0;
                 if (playerExplosionFrame >= 2) {
-                    // Explosion animation complete, end game
-                    inGame = false;
-                    message = "Game Over";
-                    timer.stop();
-                    stopAudio();
-                    return;
+                    if (playerFinalDeath) {
+                        // Final death - end game
+                        inGame = false;
+                        message = "Game Over";
+                        timer.stop();
+                        stopAudio();
+                        return;
+                    } else {
+                        // Regular hit - stop explosion animation and continue game
+                        playerExploding = false;
+                        playerFinalDeath = false;
+                    }
                 }
             }
             return; // Don't update anything else during explosion
+        }
+        
+        // Handle boss explosion animation
+        if (bossExploding) {
+            bossExplosionTimer++;
+            if (bossExplosionTimer >= 20) { // 20 frames = faster animation
+                bossExplosionFrame++;
+                bossExplosionTimer = 0;
+                if (bossExplosionFrame >= 2) { // Only 2 frames of explosion animation
+                    // Boss explosion complete, end game with win
+                    inGame = false;
+                    message = "You Win!";
+                    timer.stop();
+                    stopAudio();
+                    try { new AudioPlayer(AUDIO_GAMEWIN).play(); } catch (Exception ex) {}
+                    return;
+                }
+            }
+            return; // Don't update anything else during boss explosion
         }
         frame++;
         boolean explosionSoundPlayedThisFrame = false;
@@ -257,13 +305,13 @@ public class BossScene extends JPanel {
                         explosionSoundPlayedThisFrame = true;
                     }
                     shot.die();
-                    if (bossHealth <= 0) {
-                        inGame = false;
-                        message = "You Win!";
-                        timer.stop();
-                        stopAudio();
-                        // TODO: Replace with real win audio
-                        try { new AudioPlayer(AUDIO_GAME_OVER).play(); } catch (Exception ex) {}
+                    if (bossHealth <= 0 && !bossExploding) {
+                        // Start boss explosion animation
+                        bossExploding = true;
+                        bossExplosionFrame = 0;
+                        bossExplosionTimer = 0;
+                        // Play explosion sound
+                        try { new AudioPlayer(AUDIO_EXPLOSION).play(); } catch (Exception ex) {}
                     }
                 }
                 if (shot.getY() < 0) shot.die();
@@ -272,6 +320,18 @@ public class BossScene extends JPanel {
             }
         }
         playerShots.removeAll(shotsToRemove);
+        
+        // Update explosions
+        List<Explosion> explosionsToRemove = new ArrayList<>();
+        for (Explosion explosion : explosions) {
+            if (explosion.isVisible()) {
+                explosion.act();
+            } else {
+                explosionsToRemove.add(explosion);
+            }
+        }
+        explosions.removeAll(explosionsToRemove);
+        
         // Player invulnerability update
         player.updateInvulnerability();
         player.act();
@@ -280,7 +340,7 @@ public class BossScene extends JPanel {
     private void playAudio() {
         try {
             audioPlayer = new AudioPlayer(AUDIO_BOSS_SCENE);
-            audioPlayer.play();
+            audioPlayer.playLoop();
         } catch (Exception e) {
             System.err.println("Error initializing boss audio: " + e.getMessage());
         }
@@ -298,20 +358,37 @@ public class BossScene extends JPanel {
         int currentLives = player.getLives();
         player.setLives(currentLives - 1);
         
+        // Create explosion at player position
+        explosions.add(new Explosion(player.getX(), player.getY()));
+        
         // Play explosion sound for all player hits
         try { new AudioPlayer(AUDIO_EXPLOSION).play(); } catch (Exception ex) {}
         
         if (currentLives <= 1) {
             // Last life lost - start explosion animation
             playerExploding = true;
+            playerFinalDeath = true;
             playerExplosionFrame = 0;
             playerExplosionTimer = 0;
             // Play game over sound
             try { new AudioPlayer(AUDIO_GAME_OVER).play(); } catch (Exception ex) {}
         } else {
-            // Still have lives - make player temporarily invulnerable
-            player.startInvulnerability(90);
+            // Still have lives - respawn player
+            respawnPlayer();
         }
+    }
+    
+    private void respawnPlayer() {
+        // Respawn player at the same position as in Scene1
+        player.setX(270); // Same as START_X from Player class
+        player.setY(540); // Same as START_Y from Player class
+        
+        // Reset player movement
+        player.keyReleased(new KeyEvent(this, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), 0, KeyEvent.VK_LEFT));
+        player.keyReleased(new KeyEvent(this, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), 0, KeyEvent.VK_RIGHT));
+        
+        // Make player temporarily invulnerable (2 seconds at 60fps = 120 frames)
+        player.startInvulnerability(120);
     }
 
     private void drawStarfield(Graphics g) {

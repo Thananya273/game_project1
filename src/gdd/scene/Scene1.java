@@ -116,7 +116,7 @@ public class Scene1 extends JPanel {
     private void initAudio() {
         try {
             audioPlayer = new AudioPlayer(AUDIO_SCENE1);
-            audioPlayer.play();
+            audioPlayer.playLoop();
         } catch (Exception e) {
             System.err.println("Error initializing audio player: " + e.getMessage());
         }
@@ -326,7 +326,7 @@ public class Scene1 extends JPanel {
     private void drawPlayer(Graphics g) {
         if (playerExploding) {
             // Draw explosion animation
-            var ii = new ImageIcon(IMG_EXPLOSION);
+            var ii = new ImageIcon((playerExplosionFrame % 2 == 0) ? IMG_EXPLOSION_FRAME1 : IMG_EXPLOSION_FRAME2);
             g.drawImage(ii.getImage(), player.getX(), player.getY(), this);
         } else if (player.isVisible() && player.shouldDraw()) {
             g.drawImage(player.getImage(), player.getX(), player.getY(), this);
@@ -534,6 +534,7 @@ public class Scene1 extends JPanel {
         }
         
         boolean explosionSoundPlayedThisFrame = false;
+        boolean powerupSoundPlayedThisFrame = false;
         if (playerShotCooldown > 0) playerShotCooldown--;
         player.updatePowerups();
 
@@ -582,12 +583,25 @@ public class Scene1 extends JPanel {
             if (powerup.isVisible()) {
                 powerup.act();
                 if (powerup.collidesWith(player)) {
+                    // Play powerup collection sound only once per frame
+                    if (!powerupSoundPlayedThisFrame) {
+                        try { 
+                            AudioPlayer powerupAudio = new AudioPlayer(AUDIO_POWERUP);
+                            powerupAudio.setVolume(1.5f); // Increase volume by 50%
+                            powerupAudio.play(); 
+                        } catch (Exception ex) {}
+                        powerupSoundPlayedThisFrame = true;
+                    }
                     powerup.upgrade(player);
-                    // Play powerup collection sound
-                    try { new AudioPlayer(AUDIO_POWERUP).play(); } catch (Exception ex) {}
+                    // Immediately make invisible to prevent multiple collision checks
+                    powerup.die();
+                    break; // Exit the loop to prevent processing other powerups in the same frame
                 }
             }
         }
+        
+        // Clean up invisible powerups
+        powerups.removeIf(powerup -> !powerup.isVisible());
 
         // Enemies
         for (Enemy enemy : enemies) {
@@ -662,7 +676,7 @@ public class Scene1 extends JPanel {
                             && shotY >= (enemyY)
                             && shotY <= (enemyY + enemy.getImage().getHeight(null))) {
 
-                        var ii = new ImageIcon(IMG_EXPLOSION);
+                        var ii = new ImageIcon(IMG_EXPLOSION_FRAME1);
                         enemy.setImage(ii.getImage());
                         enemy.setDying(true);
                         explosions.add(new Explosion(enemyX, enemyY));
