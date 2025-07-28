@@ -7,7 +7,7 @@ The game is inspired by retro shooters like *Life Force / Salamander* and is bui
 
 The objective is to survive through multiple vertically-scrolling stages, defeat waves of enemies, collect power-ups, and defeat the final boss.
 
-## 👨‍💻 Team Members
+## 👨💻 Team Members
 
 - **Nueachai Wijitsopon 6510449**
 - **Phonvan Deelertpattana 6610607**
@@ -44,12 +44,13 @@ The objective is to survive through multiple vertically-scrolling stages, defeat
 
 ## 🔊 Audio Resources
 
-- [Boss Stage music](https://www.youtube.com/watch?v=roHje14-K44)
+- [Boss Stage music (YouTube)](https://www.youtube.com/watch?v=roHje14-K44)
+- [8-bit Sound Effects – Pixabay](https://pixabay.com/th/sound-effects/search/8%20bit%20video%20game/?pagi=3)
+- [8-bit Music – Fesliyan Studios](https://www.fesliyanstudios.com/royalty-free-music/downloads-c/8-bit-music/6)
 
 ## ✅ How to Run
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/yourusername/vertical-shooter-game.git
-   cd vertical-shooter-game
-(https://www.fesliyanstudios.com/royalty-free-music/downloads-c/8-bit-music/6)
+   git clone https://github.com/Thananya273/game_project1
+   cd game_project1
