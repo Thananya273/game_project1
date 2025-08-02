@@ -11,7 +11,7 @@ The objective is to survive through multiple vertically-scrolling stages, defeat
 
 - **Nueachai Wijitsopon 6510449**
 - **Phonvan Deelertpattana 6610607**
-- **Thananya Amornwiriya 6610608**
+- **Thananya Amornwiriya 6610609**
 
 ## 🧱 Built With
 
